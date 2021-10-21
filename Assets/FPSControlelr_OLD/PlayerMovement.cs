@@ -141,7 +141,6 @@ namespace FPSController
         private void applyJumpForce()
         {
             StopAllCoroutines();
-            Debug.Log($"applyJumpForce {rb.velocity}");
 
             rb.velocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
@@ -159,8 +158,6 @@ namespace FPSController
             rb.angularVelocity = Vector3.zero;
 
             float chargeTime = Time.time - m_chargeTime;
-
-            Debug.Log($"{transform.position}, {rb.velocity}");
 
             // MAX Y: 8.3
             // MAX X: 17.5

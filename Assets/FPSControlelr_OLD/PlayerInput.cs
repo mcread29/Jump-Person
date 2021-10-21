@@ -68,7 +68,8 @@ namespace FPSController
             m_crouchAction.Enable();
 
             m_teleportAction = actionMap.FindAction("Teleport");
-            m_teleportAction.performed += onTeleportChanged;
+            m_teleportAction.started += onTeleportStart;
+            m_teleportAction.Enable();
 
             m_primaryAction = actionMap.FindAction("Primary");
             m_secondaryAction = actionMap.FindAction("Secondary");
@@ -87,6 +88,9 @@ namespace FPSController
             m_crouchAction.performed -= onCrouchChanged;
             m_crouchAction.canceled -= onCrouchChanged;
             m_crouchAction.Disable();
+            
+            m_teleportAction.started -= onTeleportStart;
+            m_teleportAction.Disable();
         }
 
         public Inputs ReadInputs()
@@ -110,8 +114,7 @@ namespace FPSController
             m_inputs.m_crouch = context.ReadValue<float>() > 0;
         }
 
-        private void onTeleportChanged(InputAction.CallbackContext context) {
-            Debug.Log(context.started);
+        private void onTeleportStart(InputAction.CallbackContext context){
             if(teleport != null) teleport();
         }
     }
