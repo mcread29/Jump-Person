@@ -48,8 +48,11 @@ namespace FPSController
             m_input.teleport += teleport;
         }
 
-        private void teleport() {
+        private void teleport()
+        {
             transform.position = startPos;
+            m_justJumped = false;
+            m_previousJump = false;
         }
 
         private bool m_previousJump = false;
@@ -62,7 +65,6 @@ namespace FPSController
             {
                 if (readyToJump)
                 {
-                    if(m_inputs.m_jump) Debug.Log(m_previousJump + ", " + m_justJumped);
                     if (m_inputs.m_jump && m_previousJump == false)
                     {
                         chargeJump();
@@ -71,18 +73,23 @@ namespace FPSController
                     {
                         applyJumpForce();
                     }
+                    m_previousJump = m_inputs.m_jump;
                 }
-                else if (m_inputs.m_jump == false && m_previousJump == false)
+                else
                 {
                     readyToJump = true;
+                    m_previousJump = false;
                 }
-
-                m_previousJump = m_inputs.m_jump;
+            }
+            else
+            {
+                m_previousJump = false;
             }
 
-            if (grounded && m_inputs.m_jump == false && m_justJumped == false)
+            if (grounded && m_justJumped == false)
             {
-                Movement(m_inputs);
+                if (m_inputs.m_jump == false) Movement(m_inputs);
+                else StopMovement();
             }
         }
 
@@ -126,8 +133,17 @@ namespace FPSController
             rb.velocity = new Vector3(velocity.x, rb.velocity.y, velocity.z);
         }
 
+        private void StopMovement()
+        {
+            rb.velocity = Vector3.zero;
+        }
+
         private void chargeJump()
         {
+            orientation.transform.localScale = Vector3.one * (3 / 4);
+            orientation.transform.position = new Vector3(orientation.transform.position.x, orientation.transform.position.y - (0.5f * transform.localScale.y), orientation.transform.position.z);
+            playerCam.transform.position = new Vector3(playerCam.transform.position.x, playerCam.transform.position.y - (0.5f * transform.localScale.y), playerCam.transform.position.z);
+
             rb.velocity = Vector3.zero;
             m_chargeTime = Time.time;
             StartCoroutine(delayApplyJumpForce());
@@ -142,6 +158,10 @@ namespace FPSController
         private void applyJumpForce()
         {
             StopAllCoroutines();
+
+            orientation.transform.localScale = Vector3.one;
+            orientation.transform.position = new Vector3(orientation.transform.position.x, orientation.transform.position.y + (0.5f * transform.localScale.y), orientation.transform.position.z);
+            playerCam.transform.position = new Vector3(playerCam.transform.position.x, playerCam.transform.position.y + (0.5f * transform.localScale.y), playerCam.transform.position.z);
 
             rb.velocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
@@ -163,19 +183,12 @@ namespace FPSController
             // MAX Y: 8.3
             // MAX X: 17.5
             rb.AddForce(orientation.transform.up * jumpForce * 2f * (chargeTime / m_maxJumpChargeTime));
-            rb.AddForce(orientation.transform.forward * jumpForce * (chargeTime / m_maxJumpChargeTime));
+            if (m_inputs.m_movement.y > 0)
+                rb.AddForce(orientation.transform.forward * jumpForce * (chargeTime / m_maxJumpChargeTime));
 
             while (grounded)
                 yield return new WaitForFixedUpdate();
             m_justJumped = false;
-
-            while (rb.velocity.y > 0)
-                yield return new WaitForFixedUpdate();
-            Debug.Log($"{transform.position}, {rb.velocity}");
-
-            while (grounded == false)
-                yield return new WaitForFixedUpdate();
-            Debug.Log($"{transform.position}, {rb.velocity}");
         }
 
         private bool IsFloor(Vector3 v)
