@@ -58,6 +58,7 @@ namespace FPSController
             m_movementAction.Enable();
 
             m_jumpAction = actionMap.FindAction("Jump");
+            m_jumpAction.started += onJumpStarted;
             m_jumpAction.performed += onJumpChanged;
             m_jumpAction.canceled += onJumpChanged;
             m_jumpAction.Enable();
@@ -104,8 +105,15 @@ namespace FPSController
             m_inputs.m_movement = context.ReadValue<Vector2>();
         }
 
+        private void onJumpStarted(InputAction.CallbackContext context) {
+            Debug.Log("JUMP STARTED " + Time.time);
+            Debug.Log(context);
+        }
+
         private void onJumpChanged(InputAction.CallbackContext context)
         {
+            Debug.Log("JUMP CHANGED" + Time.time);
+            Debug.Log(context);
             m_inputs.m_jump = context.ReadValue<float>() > 0;
         }
 

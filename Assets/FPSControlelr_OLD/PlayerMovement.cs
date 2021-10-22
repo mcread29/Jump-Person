@@ -62,6 +62,7 @@ namespace FPSController
             {
                 if (readyToJump)
                 {
+                    if(m_inputs.m_jump) Debug.Log(m_previousJump + ", " + m_justJumped);
                     if (m_inputs.m_jump && m_previousJump == false)
                     {
                         chargeJump();
@@ -157,7 +158,7 @@ namespace FPSController
             rb.velocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
 
-            float chargeTime = Time.time - m_chargeTime;
+            float chargeTime = Mathf.Max(Time.time - m_chargeTime, 0.1f);
 
             // MAX Y: 8.3
             // MAX X: 17.5
