@@ -17,6 +17,7 @@ namespace FPSController
 
         //Movement
         [SerializeField] private float moveSpeed = 4500;
+        private float m_moveModifier = 0.5f;
         private bool grounded;
         [SerializeField] private LayerMask whatIsGround;
 
@@ -27,6 +28,8 @@ namespace FPSController
         [SerializeField] private float jumpForce = 550f;
 
         [SerializeField] private float m_maxJumpChargeTime = 1.0f;
+        private float m_maxForce = 1;
+        private float m_minForce = 0.5f;
 
         [SerializeField] private GameObject m_bounceCollider;
 
@@ -127,8 +130,10 @@ namespace FPSController
         {
             float xMovement = inputs.m_movement.x, yMovement = inputs.m_movement.y;
 
-            Vector3 forwardMove = orientation.transform.forward * yMovement * Time.fixedDeltaTime * moveSpeed;
-            Vector3 sideMove = orientation.transform.right * xMovement * Time.fixedDeltaTime * moveSpeed;
+            float modifier = inputs.m_crouch ? 1 : m_moveModifier;
+
+            Vector3 forwardMove = orientation.transform.forward * yMovement * Time.fixedDeltaTime * moveSpeed * modifier;
+            Vector3 sideMove = orientation.transform.right * xMovement * Time.fixedDeltaTime * moveSpeed * modifier;
             Vector3 velocity = forwardMove + sideMove;
             rb.velocity = new Vector3(velocity.x, rb.velocity.y, velocity.z);
         }
@@ -140,9 +145,6 @@ namespace FPSController
 
         private void chargeJump()
         {
-            orientation.transform.localScale = Vector3.one * (3 / 4);
-            orientation.transform.position = new Vector3(orientation.transform.position.x, orientation.transform.position.y - (0.5f * transform.localScale.y), orientation.transform.position.z);
-            playerCam.transform.position = new Vector3(playerCam.transform.position.x, playerCam.transform.position.y - (0.5f * transform.localScale.y), playerCam.transform.position.z);
 
             rb.velocity = Vector3.zero;
             m_chargeTime = Time.time;
@@ -159,10 +161,6 @@ namespace FPSController
         {
             StopAllCoroutines();
 
-            orientation.transform.localScale = Vector3.one;
-            orientation.transform.position = new Vector3(orientation.transform.position.x, orientation.transform.position.y + (0.5f * transform.localScale.y), orientation.transform.position.z);
-            playerCam.transform.position = new Vector3(playerCam.transform.position.x, playerCam.transform.position.y + (0.5f * transform.localScale.y), playerCam.transform.position.z);
-
             rb.velocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
 
@@ -178,13 +176,15 @@ namespace FPSController
             rb.velocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
 
-            float chargeTime = Mathf.Max(Time.time - m_chargeTime, 0.1f);
+            float chargeTime = Time.time - m_chargeTime;
+            float percent = chargeTime / m_maxJumpChargeTime;
+            float force = percent * (m_maxForce - m_minForce) + m_minForce;
 
             // MAX Y: 8.3
             // MAX X: 17.5
-            rb.AddForce(orientation.transform.up * jumpForce * 2f * (chargeTime / m_maxJumpChargeTime));
+            rb.AddForce(orientation.transform.up * jumpForce * 2f * force);
             if (m_inputs.m_movement.y > 0)
-                rb.AddForce(orientation.transform.forward * jumpForce * (chargeTime / m_maxJumpChargeTime));
+                rb.AddForce(orientation.transform.forward * jumpForce * force);
 
             while (grounded)
                 yield return new WaitForFixedUpdate();
