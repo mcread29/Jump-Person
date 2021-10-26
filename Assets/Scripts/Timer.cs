@@ -23,8 +23,8 @@ public class Timer : MonoBehaviour
     {
         if (m_paused == false)
         {
-            m_time += Time.deltaTime;
-            m_timer.text = FormatTime(m_time * 1000);
+            m_time += Time.deltaTime * 1000;
+            m_timer.text = FormatTime(m_time);
         }
     }
     public void Pause()
@@ -33,10 +33,15 @@ public class Timer : MonoBehaviour
     }
     string FormatTime(float time)
     {
-        int hours = (int)time / 6000;
         int minutes = (int)time / 60000;
+        int hours = (int)minutes / 60;
         int seconds = (int)time / 1000 - 60 * minutes;
         int milliseconds = (int)time - minutes * 60000 - 1000 * seconds;
-        return string.Format("{0:00}:{0:00}:{1:00}:{2:000}", hours, minutes, seconds, milliseconds);
+        return string.Format("{0:00}:{1:00}:{2:00}:{3:000}", hours, minutes % 60, seconds, milliseconds);
+    }
+
+    public string GetTimeString()
+    {
+        return FormatTime(m_time * 1000);
     }
 }

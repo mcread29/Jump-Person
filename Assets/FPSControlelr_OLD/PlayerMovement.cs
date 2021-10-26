@@ -53,6 +53,11 @@ namespace FPSController
             UI.PauseAction += Pause;
         }
 
+        private void OnDestroy()
+        {
+            UI.PauseAction -= Pause;
+        }
+
         private void teleport()
         {
             transform.position = startPos;
@@ -208,6 +213,8 @@ namespace FPSController
         private bool m_justJumped = false;
         private IEnumerator physicsJump()
         {
+            AudioManager.Instance.Jump();
+
             rb.velocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
 
