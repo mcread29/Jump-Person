@@ -43,6 +43,7 @@ namespace FPSController
         private InputAction m_primaryAction;
         private InputAction m_secondaryAction;
         private InputAction m_teleportAction;
+        private InputAction m_pauseAction;
 
         public System.Action teleport;
 
@@ -73,6 +74,10 @@ namespace FPSController
 
             m_primaryAction = actionMap.FindAction("Primary");
             m_secondaryAction = actionMap.FindAction("Secondary");
+
+            m_pauseAction = actionMap.FindAction("Pause");
+            m_pauseAction.started += Pause;
+            m_pauseAction.Enable();
         }
 
         private void OnDestroy()
@@ -88,9 +93,12 @@ namespace FPSController
             m_crouchAction.performed -= onCrouchChanged;
             m_crouchAction.canceled -= onCrouchChanged;
             m_crouchAction.Disable();
-            
+
             m_teleportAction.started -= onTeleportStart;
             m_teleportAction.Disable();
+
+            m_pauseAction.started -= Pause;
+            m_pauseAction.Disable();
         }
 
         public Inputs ReadInputs()
@@ -114,8 +122,14 @@ namespace FPSController
             m_inputs.m_crouch = context.ReadValue<float>() > 0;
         }
 
-        private void onTeleportStart(InputAction.CallbackContext context){
-            if(teleport != null) teleport();
+        private void onTeleportStart(InputAction.CallbackContext context)
+        {
+            if (teleport != null) teleport();
+        }
+
+        private void Pause(InputAction.CallbackContext context)
+        {
+            UI.Instance.Pause();
         }
     }
 }

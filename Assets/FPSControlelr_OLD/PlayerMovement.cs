@@ -49,6 +49,8 @@ namespace FPSController
             Cursor.visible = false;
 
             m_input.teleport += teleport;
+
+            UI.PauseAction += Pause;
         }
 
         private void teleport()
@@ -60,46 +62,78 @@ namespace FPSController
 
         private bool m_previousJump = false;
         private float m_chargeTime = 0.0f;
+        private Vector3 pauseVelocity;
         private void FixedUpdate()
         {
             rb.AddForce(Vector3.down * Time.fixedDeltaTime);
 
-            if (grounded && m_justJumped == false)
+            if (UI.Instance.Paused)
             {
-                if (readyToJump)
-                {
-                    if (m_inputs.m_jump && m_previousJump == false)
-                    {
-                        chargeJump();
-                    }
-                    else if (m_inputs.m_jump == false && m_previousJump)
-                    {
-                        applyJumpForce();
-                    }
-                    m_previousJump = m_inputs.m_jump;
-                }
-                else
-                {
-                    readyToJump = true;
-                    m_previousJump = false;
-                }
             }
             else
             {
-                m_previousJump = false;
-            }
+                if (grounded && m_justJumped == false)
+                {
+                    if (readyToJump)
+                    {
+                        if (m_inputs.m_jump && m_previousJump == false)
+                        {
+                            chargeJump();
+                        }
+                        else if (m_inputs.m_jump == false && m_previousJump)
+                        {
+                            applyJumpForce();
+                        }
+                        m_previousJump = m_inputs.m_jump;
+                    }
+                    else
+                    {
+                        readyToJump = true;
+                        m_previousJump = false;
+                    }
+                }
+                else
+                {
+                    m_previousJump = false;
+                }
 
-            if (grounded && m_justJumped == false)
+                if (grounded && m_justJumped == false)
+                {
+                    if (m_inputs.m_jump == false) Movement(m_inputs);
+                    else StopMovement();
+                }
+            }
+        }
+
+        public void Pause(bool paused)
+        {
+            if (paused)
             {
-                if (m_inputs.m_jump == false) Movement(m_inputs);
-                else StopMovement();
+                pauseVelocity = rb.velocity;
+                rb.isKinematic = true;
+                rb.velocity = Vector3.zero;
+            }
+            else
+            {
+                rb.velocity = pauseVelocity;
+                rb.isKinematic = false;
             }
         }
 
         private void Update()
         {
             m_inputs = m_input.ReadInputs();
-            Look(m_inputs);
+            if (UI.Instance.Paused == false)
+            {
+                Look(m_inputs);
+            }
+            else
+            {
+                if (m_jumpDelay != null) StopCoroutine(m_jumpDelay);
+                m_previousJump = false;
+                readyToJump = true;
+                m_justJumped = false;
+            }
 
             m_bounceCollider.SetActive(grounded == false || m_justJumped);
         }
@@ -143,12 +177,13 @@ namespace FPSController
             rb.velocity = Vector3.zero;
         }
 
+        private Coroutine m_jumpDelay;
         private void chargeJump()
         {
 
             rb.velocity = Vector3.zero;
             m_chargeTime = Time.time;
-            StartCoroutine(delayApplyJumpForce());
+            m_jumpDelay = StartCoroutine(delayApplyJumpForce());
         }
 
         private IEnumerator delayApplyJumpForce()
@@ -234,6 +269,11 @@ namespace FPSController
         private void StopGrounded()
         {
             grounded = false;
+        }
+
+        public void ChangeSensitivity(float sens)
+        {
+            this.sensitivity = sens;
         }
 
     }
