@@ -51,11 +51,24 @@ namespace FPSController
             m_input.teleport += teleport;
 
             UI.PauseAction += Pause;
+
+            if (Savedata.Continue)
+            {
+                transform.SetPositionAndRotation(Savedata.SavedPosition, Quaternion.Euler(Savedata.SavedRotation));
+            }
+            Savedata.OnSave += savePositionAndRotation;
+        }
+
+        private void savePositionAndRotation()
+        {
+            Savedata.SavePosition(transform.position);
+            Savedata.SaveRotation(transform.rotation.eulerAngles);
         }
 
         private void OnDestroy()
         {
             UI.PauseAction -= Pause;
+            Savedata.OnSave -= savePositionAndRotation;
         }
 
         private void teleport()
@@ -72,10 +85,7 @@ namespace FPSController
         {
             rb.AddForce(Vector3.down * Time.fixedDeltaTime);
 
-            if (UI.Instance.Paused)
-            {
-            }
-            else
+            if (UI.Instance.Paused == false)
             {
                 if (grounded && m_justJumped == false)
                 {
@@ -104,8 +114,10 @@ namespace FPSController
 
                 if (grounded && m_justJumped == false)
                 {
+                    UI.CanPause = true;
                     if (m_inputs.m_jump == false) Movement(m_inputs);
                     else StopMovement();
+                    Savedata.Save();
                 }
             }
         }
@@ -208,6 +220,8 @@ namespace FPSController
             readyToJump = false;
 
             StartCoroutine(physicsJump());
+
+            UI.CanPause = false;
         }
 
         private bool m_justJumped = false;

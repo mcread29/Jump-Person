@@ -29,6 +29,8 @@ public class UI : MonoBehaviour
 
     private bool m_showingFinalScreen = false;
 
+    public static bool CanPause = true;
+
     private void Awake()
     {
         if (m_instance != null)
@@ -42,7 +44,7 @@ public class UI : MonoBehaviour
 
     public void Pause()
     {
-        if (m_showingFinalScreen) return;
+        if (m_showingFinalScreen || CanPause == false) return;
 
         if (m_settingsActive == false)
         {
@@ -79,17 +81,6 @@ public class UI : MonoBehaviour
     {
         AudioManager.Instance.SelectMenu();
         SceneManager.LoadScene("Menu");
-    }
-
-    public void MuteAudio(bool mute)
-    {
-        if(mute) {
-            AudioManager.Instance.Mute();
-        }
-        else
-        {
-            AudioManager.Instance.UnMute();
-        }
     }
 
     public void ShowFinalScreen()

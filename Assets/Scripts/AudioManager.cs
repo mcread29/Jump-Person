@@ -31,6 +31,9 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioSource m_menuMusic;
     [SerializeField] private AudioSource m_gameMusic;
 
+    float m_soundVolume = 0.5f;
+    float m_musicVolume = 0.65f;
+
     private bool m_muted = false;
     public bool Muted { get => m_muted; }
 
@@ -43,8 +46,16 @@ public class AudioManager : MonoBehaviour
     public void UnMute()
     {
         m_muted = false;
-        SoundManager.SoundVolume = 0.5f;
-        SoundManager.MusicVolume = 0.65f;
+        SoundManager.SoundVolume = m_soundVolume;
+        SoundManager.MusicVolume = m_musicVolume;
+    }
+    public void SetVolume(float volume)
+    {
+        m_soundVolume = 0.5f * volume;
+        m_musicVolume = 0.65f * volume;
+
+        SoundManager.SoundVolume = m_soundVolume;
+        SoundManager.MusicVolume = m_musicVolume;
     }
 
     public void JumpCharge()

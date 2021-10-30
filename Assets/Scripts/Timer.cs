@@ -15,7 +15,13 @@ public class Timer : MonoBehaviour
     private void Start()
     {
         canvasGroup = GetComponent<CanvasGroup>();
-        Debug.Log(canvasGroup.gameObject.name);
+        if (Savedata.Continue) m_time = Savedata.SavedTime;
+        Savedata.OnSave += saveTime;
+    }
+
+    private void OnDestroy()
+    {
+        Savedata.OnSave -= saveTime;
     }
 
     // Update is called once per frame
@@ -26,6 +32,10 @@ public class Timer : MonoBehaviour
             m_time += Time.deltaTime * 1000;
             m_timer.text = FormatTime(m_time);
         }
+    }
+    private void saveTime()
+    {
+        Savedata.SaveTime(m_time);
     }
     public void Pause()
     {
