@@ -40,9 +40,14 @@ namespace FPSController
         private Inputs m_inputs;
 
         private Vector3 startPos = Vector3.zero;
+        private Vector3 camPos = Vector3.zero;
+
+        private GoTweenConfig charge;
+        private GoTweenConfig jump;
 
         void Start()
         {
+            camPos = playerCam.transform.position;
             startPos = transform.position;
             m_input = GetComponent<PlayerInput>();
             Cursor.lockState = CursorLockMode.Locked;
@@ -57,6 +62,11 @@ namespace FPSController
                 transform.SetPositionAndRotation(Savedata.SavedPosition, Quaternion.Euler(Savedata.SavedRotation));
             }
             Savedata.OnSave += savePositionAndRotation;
+
+            charge = new GoTweenConfig()
+                    .localPosition(new Vector3(camPos.x, camPos.y - (0.5f * transform.localScale.y), camPos.z))
+                    .setEaseType(GoEaseType.ExpoOut);
+            jump = new GoTweenConfig().localPosition(camPos).setEaseType(GoEaseType.ExpoOut);
         }
 
         private void savePositionAndRotation()
@@ -197,6 +207,7 @@ namespace FPSController
         private Coroutine m_jumpDelay;
         private void chargeJump()
         {
+            Go.to(playerCam.transform, m_maxJumpChargeTime, charge);
 
             rb.velocity = Vector3.zero;
             m_chargeTime = Time.time;
@@ -222,6 +233,8 @@ namespace FPSController
             StartCoroutine(physicsJump());
 
             UI.CanPause = false;
+            Go.killAllTweensWithTarget(playerCam.transform);
+            Go.to(playerCam.transform, 0.125f, jump);
         }
 
         private bool m_justJumped = false;

@@ -38,7 +38,10 @@ public class UI : MonoBehaviour
             Destroy(m_instance.gameObject);
         }
         m_instance = this;
+    }
 
+    private void Start()
+    {
         m_muteToggle.isOn = AudioManager.Instance.Muted;
     }
 
